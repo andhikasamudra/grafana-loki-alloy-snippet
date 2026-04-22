@@ -1,0 +1,12 @@
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    user: root
+    volumes:
+      - alloy.hcl:/etc/alloy/config.hcl
+      - /data/logs:/data/logs
+    command:
+      - run
+      - /etc/alloy/config.hcl
+    restart: unless-stopped
