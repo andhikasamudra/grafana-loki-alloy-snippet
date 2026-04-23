@@ -4,8 +4,10 @@ services:
     container_name: alloy
     user: root
     volumes:
-      - alloy.hcl:/etc/alloy/config.hcl
+      - ./alloy.hcl:/etc/alloy/config.hcl
       - /data/logs:/data/logs
+    env_file:
+      - .env
     command:
       - run
       - /etc/alloy/config.hcl
