@@ -1,28 +1,12 @@
 logging {
-  level = sys.env("LOG_LEVEL")
+  level = "debug"
 }
-
-server {
-  http_listen_address = "0.0.0.0:9080"
-}
-
-# ========================
-# LOKI OUTPUT (SHARED)
-# ========================
 
 loki.write "default" {
   endpoint {
     url = sys.env("LOKI_URL")
   }
-
-  # safer: hardcode or ensure env is valid
-  batch_size = 102400
-  batch_wait = "2s"
 }
-
-# ========================
-# GLOBAL LABEL
-# ========================
 
 loki.relabel "global_labels" {
   rule {
@@ -38,35 +22,56 @@ loki.relabel "global_labels" {
   forward_to = [loki.write.default.receiver]
 }
 
-# ========================
-# SERVICE LIST
-# ========================
-
-local.file_match "risk_services" {
+// service list
+local.file_match "services" {
   path_targets = [
     {
-      __path__ = "/data/logs/service-name/service-name.log",
-      group    = "risk"
-    }
+      __path__ = "/data/logs/service_name/service_name.log",
+      group    = "group_name",
+      service  = "service_name",
+    },
   ]
 }
 
-# ========================
-# PIPELINE ENTRY
-# ========================
-
-loki.source.file "risk_services" {
-  targets    = local.file_match.risk_services.targets
-  forward_to = [loki.process.extract_service.receiver]
+loki.source.file "services" {
+  targets    = local.file_match.services.targets
+  forward_to = [loki.relabel.log_parser.receiver]
 }
 
-# ========================
-# SHARED SERVICE EXTRACTION
-# ========================
+loki.process "log_parser" {
 
-loki.process "extract_service" {
   stage.regex {
-    expression = "/data/logs/(?P<service>[^/]+)/"
+    expression = ".*/data/logs/(?P<service>[^/]+)/"
+  }
+
+  stage.labels {
+    values = {
+      service = "service",
+    }
+  }
+
+  stage.regex {
+    expression = ".*\\s(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)(?:\\.\\d+)?\\s+-\\s+(?P<data>.*)"
+  }
+
+  stage.labels {
+    values = {
+      level = "level",
+    }
+  }
+
+  stage.regex {
+    expression = "(?P<function>[a-zA-Z0-9_]+(ServiceImpl|Util|Handler|Aspect)\\.[a-zA-Z0-9_]+)"
+  }
+
+  stage.labels {
+    values = {
+      function = "function",
+    }
+  }
+
+  stage.output {
+    source = "data"
   }
 
   forward_to = [loki.relabel.global_labels.receiver]
