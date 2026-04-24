@@ -41,16 +41,6 @@ loki.source.file "services" {
 loki.process "log_parser" {
 
   stage.regex {
-    expression = ".*/data/logs/(?P<service>[^/]+)/"
-  }
-
-  stage.labels {
-    values = {
-      service = "service",
-    }
-  }
-
-  stage.regex {
     expression = ".*\\s(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)(?:\\.\\d+)?\\s+-\\s+(?P<data>.*)"
   }
 
@@ -68,10 +58,6 @@ loki.process "log_parser" {
     values = {
       function = "function",
     }
-  }
-
-  stage.output {
-    source = "data"
   }
 
   forward_to = [loki.relabel.global_labels.receiver]
