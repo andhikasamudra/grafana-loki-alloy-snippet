@@ -35,7 +35,7 @@ local.file_match "services" {
 
 loki.source.file "services" {
   targets    = local.file_match.services.targets
-  forward_to = [loki.relabel.log_parser.receiver]
+  forward_to = [loki.process.log_parser.receiver]
 }
 
 loki.process "log_parser" {
