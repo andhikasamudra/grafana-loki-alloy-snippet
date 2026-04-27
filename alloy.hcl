@@ -41,7 +41,12 @@ loki.source.file "services" {
 loki.process "log_parser" {
 
   stage.regex {
-    expression = ".*\\s(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)(?:\\.\\d+)?\\s+-\\s+(?P<data>.*)"
+    expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)(?:\\.\\d+)?\\s+-\\s+(?P<data>.*)"
+  }
+
+  stage.timestamp {
+    source = "ts"
+    format = "2006-01-02 15:04:05"
   }
 
   stage.labels {
