@@ -26,24 +26,9 @@ loki.relabel "global_labels" {
 local.file_match "services" {
   path_targets = [
     {
-      __path__ = "/data/logs/bncrisk-data-server/bncrisk-data-server.log",
-      group    = "risk",
-      service  = "bncrisk-data-server",
-    },
-    {
-      __path__ = "/data/logs/bncrisk-quota-server/bncrisk-quota-server.log",
-      group    = "risk",
-      service  = "bncrisk-quota-server",
-    },
-    {
-      __path__ = "/data/logs/pre-loan-service/pre-loan-service.log",
-      group    = "lending",
-      service  = "pre-loan-service",
-    },
-    {
-      __path__ = "/data/logs/post-loan-service/post-loan-service.log",
-      group    = "lending",
-      service  = "post-loan-service",
+      __path__ = "/data/logs/service-name/service-name.log",
+      group    = "service-group",
+      service  = "service-name",
     },
   ]
 }
