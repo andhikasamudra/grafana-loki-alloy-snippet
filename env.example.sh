@@ -1,6 +1,6 @@
-source LOG_LEVEL="debug"
+export LOG_LEVEL="debug"
 
-source ENV="sit"
-source HOST="192.168.162.XX"
+export ENV="sit"
+export HOST="192.168.162.XX"
 
-source LOKI_URL="http://loki.url:withport/loki/api/v1/push"
+export LOKI_URL="http://loki.url:withport/loki/api/v1/push"
