@@ -22,7 +22,6 @@ loki.relabel "global_labels" {
   forward_to = [loki.write.default.receiver]
 }
 
-// service list
 local.file_match "services" {
   path_targets = [
     {
@@ -40,17 +39,17 @@ loki.source.file "services" {
 
 loki.process "log_parser" {
   stage.multiline {
-    firstline = "^\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}"
+    firstline     = "^\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}"
     max_wait_time = "2s"
   }
 
   stage.regex {
-    expression = "^(?P<ts>\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+\\[.*\\]\\s+\\[.*\\]\\s+\\[.*\\]\\s+(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)\\s+-\\s+(?P<data>[\\s\\S]*)"
+    expression = "^(?P<ts>\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(?:\\[[^\\]]*\\]\\s+){0,3}(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)\\s+-\\s+.*"
   }
 
   stage.timestamp {
-    source = "ts"
-    format = "02-01-2006 15:04:05.000"
+    source   = "ts"
+    format   = "02-01-2006 15:04:05.000"
     location = "Asia/Jakarta"
   }
 
@@ -68,10 +67,6 @@ loki.process "log_parser" {
     values = {
       function = "function",
     }
-  }
-
-  stage.output {
-    source = "data"
   }
 
   forward_to = [loki.relabel.global_labels.receiver]
