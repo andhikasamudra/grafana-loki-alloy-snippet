@@ -26,9 +26,24 @@ loki.relabel "global_labels" {
 local.file_match "services" {
   path_targets = [
     {
-      __path__ = "/data/logs/service_name/service_name.log",
-      group    = "group_name",
-      service  = "service_name",
+      __path__ = "/data/logs/bncrisk-data-server/bncrisk-data-server.log",
+      group    = "risk",
+      service  = "bncrisk-data-server",
+    },
+    {
+      __path__ = "/data/logs/bncrisk-quota-server/bncrisk-quota-server.log",
+      group    = "risk",
+      service  = "bncrisk-quota-server",
+    },
+    {
+      __path__ = "/data/logs/pre-loan-service/pre-loan-service.log",
+      group    = "lending",
+      service  = "pre-loan-service",
+    },
+    {
+      __path__ = "/data/logs/post-loan-service/post-loan-service.log",
+      group    = "lending",
+      service  = "post-loan-service",
     },
   ]
 }
@@ -39,14 +54,19 @@ loki.source.file "services" {
 }
 
 loki.process "log_parser" {
+  stage.multiline {
+    firstline = "^\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}"
+    max_wait_time = "2s"
+  }
 
   stage.regex {
-    expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)(?:\\.\\d+)?\\s+-\\s+(?P<data>.*)"
+    expression = "^(?P<ts>\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+\\[.*\\]\\s+\\[.*\\]\\s+\\[.*\\]\\s+(?P<level>INFO|ERROR|WARN|DEBUG)\\s+(?P<prefix_func>[^\\s]+)\\s+-\\s+(?P<data>[\\s\\S]*)"
   }
 
   stage.timestamp {
     source = "ts"
-    format = "2006-01-02 15:04:05"
+    format = "02-01-2006 15:04:05.000"
+    location = "Asia/Jakarta"
   }
 
   stage.labels {
@@ -63,6 +83,10 @@ loki.process "log_parser" {
     values = {
       function = "function",
     }
+  }
+
+  stage.output {
+    source = "data"
   }
 
   forward_to = [loki.relabel.global_labels.receiver]
