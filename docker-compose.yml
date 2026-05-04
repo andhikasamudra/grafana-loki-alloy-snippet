@@ -12,3 +12,8 @@ services:
       - run
       - /etc/alloy/config.hcl
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
